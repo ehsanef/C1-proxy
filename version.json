@@ -1,0 +1,6 @@
+{
+  "version": "0.1.0",
+  "released": "2026-09-01",
+  "channel": "public-beta",
+  "notes": "Initial public beta: one-click Cloudflare deployment, D1-backed admin panel, multi-user VLESS-over-WebSocket, quotas, clean-IP subscriptions, Clash/sing-box/Base64 output, backup and security hardening."
+}

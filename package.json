@@ -1,0 +1,35 @@
+{
+  "name": "c1-proxy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "C1 Proxy \u2014 modular self-hosted edge proxy control plane for Cloudflare Workers",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --import tsx tests/*.test.ts",
+    "check": "npm run typecheck && npm test && wrangler deploy --dry-run --outdir .wrangler/dry-run"
+  },
+  "cloudflare": {
+    "bindings": {
+      "DB": {
+        "description": "C1 primary D1 database. Cloudflare provisions it automatically for Deploy to Cloudflare."
+      },
+      "KV": {
+        "description": "C1 cache and rate-limit KV namespace. Cloudflare provisions it automatically."
+      },
+      "C1_CLAIM_TOKEN": {
+        "description": "Recommended install secret. Generate a random value (for example `openssl rand -hex 16`). You will enter it once on the first-install screen."
+      },
+      "C1_SESSION_SECRET": {
+        "description": "Optional session signing secret. Generate a random value (for example `openssl rand -hex 32`). If omitted, C1 generates and stores one in D1 on first use."
+      }
+    }
+  },
+  "devDependencies": {
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.116.0"
+  }
+}

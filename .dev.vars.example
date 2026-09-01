@@ -1,0 +1,4 @@
+# Deploy to Cloudflare will ask for these secrets when it detects this file.
+# Use random values in production. Do NOT commit your real .dev.vars file.
+C1_CLAIM_TOKEN=replace-with-random-hex
+C1_SESSION_SECRET=replace-with-random-hex
