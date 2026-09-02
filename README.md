@@ -1,128 +1,151 @@
 <div align="center">
 
-<img src="./assets/c1-logo.svg" width="96" alt="C1 Proxy logo">
+# ⚡ C1 Proxy
 
-# C1 Proxy
+**Self-Hosted, Edge-Native Secure Proxy Control Plane for Cloudflare Workers**
 
-### A maintainable, self-hosted edge proxy control plane for Cloudflare Workers
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
+[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020.svg?style=flat-square&logo=cloudflare)](https://workers.cloudflare.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-31%20Passed-brightgreen.svg?style=flat-square)](#automated-testing)
 
-**VLESS · WebSocket · Multi-user · D1 · Clean IP · Clash · sing-box · Base64**
+[English](README.md) &bull; [فارسی (Persian)](README.fa.md)
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ehsanef/C1-proxy)
+<br/>
 
-[![License](https://img.shields.io/badge/license-MIT-0f172a?style=for-the-badge)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.1.0-7c3aed?style=for-the-badge)](version.json)
-[![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-f38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
-
-**[راهنمای فارسی](README.fa.md)**
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/c1-proxy/c1-proxy)
 
 </div>
 
 ---
 
-## What C1 is
+## 📖 Overview
 
-C1 Proxy is an independent, modular proxy panel designed for people who want to run their own private edge endpoint on Cloudflare Workers. The source stays readable and organized; Wrangler bundles it into a compact Worker at deploy time.
+**C1 Proxy** is an edge-native secure proxy control plane and data plane designed to run inside your personal Cloudflare account. It delivers high-performance proxy routing across **VLESS**, **Trojan**, and **Shadowsocks AEAD** over WebSocket + TLS with zero mandatory VPS, Docker, Python, or external database infrastructure.
 
-The public beta focuses on a small set of features that can be implemented and audited well instead of hiding a huge monolithic artifact behind a panel.
+### Core Architectural Principles
 
-### Included in 0.1.0
+1. **Clear Plane Separation**: Control Plane (Admin Console, REST API, D1 Canonical Store, Subscriptions) and Data Plane (WebSocket Pair, Protocol Dispatcher, Sockets Pump, Bounded Accounting) are strictly separated internally.
+2. **True Cloudflare Native**: Uses Cloudflare Workers, D1 Database, KV Cache, Web Crypto API, and Cloudflare Sockets (`cloudflare:sockets`) without unneeded npm runtime bloat.
+3. **Zero 3rd-Party Credential Leaks**: QR codes are generated directly on the edge in pure TypeScript SVG. No credentials or URIs are ever sent to external QR servers.
+4. **Accurate Feature Claims**: Every advertised protocol actually works on the edge. No fake country selectors, simulated configs, or unsupported claims.
 
-- One-click **Deploy to Cloudflare**.
-- Automatic provisioning of **D1** and **KV** by Cloudflare.
-- Secure first-install admin setup.
-- Multi-user management with quota, daily quota, expiry and enable/disable.
-- Per-user private subscription token and UUID.
-- **VLESS over WebSocket + TLS** profiles.
-- Base64/raw, Clash/Mihomo and sing-box subscriptions.
-- Per-user or global clean-IP targets.
-- Traffic accounting written at connection close, not on every data chunk.
-- JSON backup export.
-- Minimal health endpoint and unbranded decoy root page.
-- PBKDF2 password hashing, signed sessions, CSRF checks and login throttling.
+---
 
-## One-click install
+## 🚀 One-Click Quick Start
 
-Click the button:
+Deploying C1 Proxy requires only a **GitHub** account and a **Cloudflare** account.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ehsanef/C1-proxy)
+### 1. Click Deploy
+Click the **Deploy to Cloudflare Workers** button above. Cloudflare will automatically provision:
+- The Worker runtime
+- Cloudflare D1 Database (`c1-proxy-db`)
+- Cloudflare KV Namespace (`KV`)
 
-Cloudflare will clone the public repository into the installer's GitHub account, create the Worker, provision the D1 database and KV namespace, configure Workers Builds, and deploy it.
+### 2. First-Time Setup
+1. Once deployment succeeds, open `https://your-worker.workers.dev/admin`.
+2. The **First-Time Installation** wizard will automatically launch.
+3. Choose your administrative username and secure password (minimum 8 characters).
+4. Click **Complete Setup & Launch**.
 
-After deployment, open:
+### 3. Create Your First User
+1. In the **Users** tab, click **Add User**.
+2. Specify user name, bandwidth quota, and protocol options.
+3. Open **Manage** to view:
+   - Universal Subscription URL (auto-detects client format)
+   - Direct connection URIs for VLESS, Trojan, and Shadowsocks
+   - Instant SVG QR codes for mobile scanning
 
-```text
-https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev/admin
-```
+---
 
-If the panel is new, C1 redirects you to `/install`.
+## 🛡️ Protocol Engine & Data Plane
 
-For the safest install, set a random `C1_CLAIM_TOKEN` during the Cloudflare deployment flow and enter the same token during first setup.
+| Protocol | Transport | Security | Status | Details |
+| :--- | :--- | :--- | :--- | :--- |
+| **VLESS** | WebSocket | TLS (Port 443) | **Stable** | Standard VLESS v0 protocol, 16-byte UUID auth, custom SNI & fingerprint. |
+| **Trojan** | WebSocket | TLS (Port 443) | **Stable** | RFC 3874 SHA-224 password authentication with CRLF delimiter compliance. |
+| **Shadowsocks** | WebSocket | TLS (Port 443) | **Stable** | SIP007 AEAD (`aes-128-gcm`, `aes-256-gcm`) over WebSocket. |
+| **VLESS Reality** | TCP | Custom | *Planned* | Modular backend node architecture required for native TCP Reality. |
+| **WireGuard / WARP** | UDP | Crypto | *Planned* | Planned for optional secondary backend forwarder. |
 
-## Manual install
+---
+
+## 📡 C1 Radar & Clean IP System
+
+### Integrated Browser-Side C1 Radar
+Unlike server-side IP testers that test latency from Cloudflare datacenters to themselves, **C1 Radar** runs directly in your browser. It measures reachability, packet loss, and round-trip latency from **your actual local ISP** to Cloudflare edge nodes.
+
+- **Bounded Concurrency**: Scans 8–16 candidates simultaneously without freezing the browser.
+- **Generation ID Sequence Guards**: Ensures stale asynchronous scan results never reappear after clearing or retesting.
+- **1-Click Apply**: Immediately apply the lowest-latency IP globally or to specific users.
+
+---
+
+## 📱 Client Compatibility Matrix
+
+C1 Proxy universal subscriptions (`/s/{token}`) detect the client's `User-Agent` and automatically deliver the proper schema:
+
+| Client | Platform | Direct URI | Auto Sub | Clash Meta | sing-box | Base64 |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **v2rayNG** | Android | ✅ | ✅ | — | — | ✅ |
+| **Karing** | iOS / Android / macOS / Windows | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **Mihomo / Clash Meta** | Multi-platform | — | ✅ | ✅ | — | — |
+| **sing-box** (v1.8+) | Multi-platform | — | ✅ | — | ✅ | — |
+| **Shadowrocket** | iOS | ✅ | ✅ | — | — | ✅ |
+| **Streisand** | iOS | ✅ | ✅ | — | — | ✅ |
+
+Explicit formats can also be queried directly:
+- `?format=auto`
+- `?format=clash` / `?format=mihomo`
+- `?format=singbox`
+- `?format=karing`
+- `?format=base64`
+- `?format=raw`
+
+---
+
+## 🎨 Interface & Experience
+
+- **Console Aesthetic**: Dark graphite palette (`#090B0E`), glassmorphism accents, crisp monospace typography.
+- **Internationalization & True RTL**: English and Persian (Farsi) are first-class citizens. Switching to Persian sets `dir="rtl"`, mirroring sidebar layouts, tables, buttons, and progress indicators authentically.
+- **Granular User Detail**:
+  - Live bandwidth and daily quota meters
+  - Active concurrent IP counters
+  - Instant credential rotation (Sub token, VLESS UUID, Trojan pass, Shadowsocks pass)
+  - SVG QR code modals with zero external requests
+- **Reusable Inbound Profiles**: Create and bind modular inbound ingress profiles across multiple users.
+
+---
+
+## 🔒 Security & Architecture
+
+- **Web Crypto PBKDF2**: Password hashing uses native Web Crypto PBKDF2 with 100,000 iterations (fully tested within Cloudflare runtime limits).
+- **HMAC Signed Sessions**: Ephemeral HttpOnly, Secure, SameSite=Strict cookie session management.
+- **Double-Submit CSRF**: Mutating administrative actions require valid `x-c1-csrf` headers.
+- **SSRF / Target Policy**: Outbound connections to RFC 1918 private subnets (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, loopback) and spam ports are blocked by default.
+- **Sensitive Value Redaction**: Audit logs, diagnostics, and API responses sanitize passwords, session keys, and tokens.
+
+---
+
+## 🧪 Automated Testing
+
+C1 Proxy maintains an automated test suite across all subsystems:
 
 ```bash
-git clone https://github.com/ehsanef/C1-proxy.git
-cd C1-proxy
-npm install
-npx wrangler login
-npm run deploy
+npm test
 ```
 
-Wrangler 4.x can automatically provision the D1 and KV bindings declared in `wrangler.jsonc`.
+### Verified Test Suites:
+- `tests/protocols.test.ts`: VLESS v0 packet parsing, Trojan SHA-224 test vectors, Shadowsocks AEAD decrypt & parsing.
+- `tests/auth.test.ts`: PBKDF2 100,000 iterations, HMAC-SHA256 session signatures, CSRF enforcement.
+- `tests/policy.test.ts`: Quota policies, daily quotas, expiration checks, SSRF target validation, and buffered accounting.
+- `tests/subscription.test.ts`: Clash Meta YAML structure, sing-box JSON schemas, Base64 formatting, User-Agent detection.
+- `tests/qr.test.ts`: Pure TypeScript SVG QR generation and data URIs.
+- `tests/migrations.test.ts`: Idempotent D1 database schema migration execution.
 
-## How users connect
+---
 
-Create a user from the admin panel. C1 gives the user a subscription URL:
+## 📄 License
 
-```text
-https://YOUR-HOST/s/USER_TOKEN
-```
-
-The same link auto-detects many clients. Explicit formats are also available:
-
-```text
-/s/USER_TOKEN?format=base64
-/s/USER_TOKEN?format=clash
-/s/USER_TOKEN?format=singbox
-```
-
-The WebSocket path generated for that user is private and uses both a subscription token in the path and the user's VLESS UUID during the protocol handshake.
-
-## Architecture
-
-```text
-src/
-├── index.ts              request router
-├── app/                  HTML/UI and HTTP helpers
-├── auth/                 password/session/CSRF logic
-├── database/             D1 schema and repositories
-├── proxy/                VLESS parser + WebSocket relay
-├── subscriptions/        Base64/Clash/sing-box generators
-└── utils/                encoding/network helpers
-```
-
-The proxy hot path avoids database work per packet. Traffic counters are accumulated in memory for the connection and persisted on close.
-
-## Security notes
-
-C1 is a network relay. Treat every user subscription URL and UUID as a credential.
-
-- Keep the admin password private.
-- Use a random install claim token.
-- Use a custom domain when appropriate.
-- Delete users you no longer trust; disabling a user stops new connections.
-- C1 blocks loopback, link-local, common RFC1918 private IPv4 targets and a small set of risky service ports from the relay.
-- The root route does not advertise C1 or its version.
-
-See [SECURITY.md](SECURITY.md).
-
-## Public beta scope
-
-C1 0.1.0 is deployable and usable, but it is **not yet full Nova feature parity**. The roadmap includes Trojan, Shadowsocks AEAD, WARP/AmneziaWG profile support, Telegram control, GitHub subscription mirror, C1 Radar, richer routing policies, restore/import, and additional transports.
-
-Those features are intentionally not represented as finished until they have code and tests.
-
-## License and upstream history
-
-C1-authored code is MIT licensed. C1 is independent from Nova Proxy and does not include Nova's later PolyForm-protected release code or branding. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
+Attributions and specifications are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

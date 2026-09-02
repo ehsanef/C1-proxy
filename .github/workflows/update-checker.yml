@@ -1,0 +1,29 @@
+name: Upstream Update Checker
+
+on:
+  schedule:
+    - cron: '0 4 * * 1' # Weekly on Monday at 04:00 UTC
+  workflow_dispatch:
+
+jobs:
+  check-updates:
+    name: Check Upstream C1 Proxy Releases
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check Dependencies & Run Tests
+        run: |
+          npm ci
+          npm run typecheck
+          npm test

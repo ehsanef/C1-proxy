@@ -1,35 +1,34 @@
 {
   "name": "c1-proxy",
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "Self-hosted, edge-native secure proxy control plane for Cloudflare Workers",
   "private": true,
   "type": "module",
-  "description": "C1 Proxy \u2014 modular self-hosted edge proxy control plane for Cloudflare Workers",
+  "main": "src/index.ts",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
+    "build": "wrangler deploy --dry-run --outdir dist",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --import tsx tests/*.test.ts",
-    "check": "npm run typecheck && npm test && wrangler deploy --dry-run --outdir .wrangler/dry-run"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
-  "cloudflare": {
-    "bindings": {
-      "DB": {
-        "description": "C1 primary D1 database. Cloudflare provisions it automatically for Deploy to Cloudflare."
-      },
-      "KV": {
-        "description": "C1 cache and rate-limit KV namespace. Cloudflare provisions it automatically."
-      },
-      "C1_CLAIM_TOKEN": {
-        "description": "Recommended install secret. Generate a random value (for example `openssl rand -hex 16`). You will enter it once on the first-install screen."
-      },
-      "C1_SESSION_SECRET": {
-        "description": "Optional session signing secret. Generate a random value (for example `openssl rand -hex 32`). If omitted, C1 generates and stores one in D1 on first use."
-      }
-    }
-  },
+  "keywords": [
+    "c1-proxy",
+    "cloudflare-workers",
+    "proxy",
+    "vless",
+    "trojan",
+    "shadowsocks",
+    "edge-computing",
+    "control-plane"
+  ],
+  "author": "C1 Proxy Team",
+  "license": "MIT",
   "devDependencies": {
-    "tsx": "^4.20.5",
-    "typescript": "^5.9.2",
-    "wrangler": "^4.116.0"
+    "@cloudflare/workers-types": "^4.20241230.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "wrangler": "^3.99.0"
   }
 }

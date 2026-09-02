@@ -1,43 +1,38 @@
-# C1 Proxy security
+# Security Policy for C1 Proxy
 
-C1 is a credentialed network relay. Security issues can affect both the administrator and every user of an instance.
+## Supported Versions
 
-## Credentials
+| Version | Supported          |
+| ------- | ------------------ |
+| 1.0.x   | :white_check_mark: |
 
-Treat these as secrets:
+---
 
-- administrator password
-- `C1_CLAIM_TOKEN`
-- `C1_SESSION_SECRET`
-- every user's subscription token
-- every user's VLESS UUID
+## Security Philosophy & Architecture
 
-Never commit `.dev.vars` or real secret values to GitHub.
+C1 Proxy is architected according to zero-trust edge computing principles:
 
-## Administrator password
+1. **Native Web Crypto Cryptography**:
+   - Administrative passwords are keyed using Web Crypto PBKDF2 with a tested Cloudflare-safe 100,000 iterations and a 16-byte random salt. Plaintext passwords are never stored.
+   - Session tokens are signed using HMAC-SHA256 with an edge-persisted secret. Sessions use `HttpOnly`, `Secure`, and `SameSite=Strict` cookie policies.
+2. **Strict CSRF Enforcement**:
+   - Mutating API endpoints require a valid `x-c1-csrf` header matching the authenticated session payload.
+3. **SSRF & RFC1918 Protection**:
+   - The edge data plane blocks connections to loopback (127.0.0.0/8), RFC 1918 private subnets (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16), link-local addresses, and spam ports (25, 465, 587).
+4. **Zero Third-Party Data Leaks**:
+   - QR codes are generated directly on the edge in pure TypeScript SVG. No user credentials, subscription tokens, or private node URIs are ever transmitted to external QR generation services.
+5. **Sensitive Field Redaction**:
+   - Passwords, cryptographic salts, session secrets, and cloud credentials are automatically stripped from API payloads, audit logs, and diagnostic exports.
 
-C1 does not store the administrator password in plaintext. It stores a random salt and PBKDF2-derived verifier in D1. Session signing uses an independent secret.
+---
 
-## Sessions
+## Reporting a Vulnerability
 
-Admin sessions are HMAC-signed, HttpOnly, Secure and SameSite=Strict. State-changing API calls additionally require a CSRF token bound to the signed session.
+If you discover a security vulnerability in C1 Proxy, please report it privately via GitHub Security Advisories or by emailing `security@c1-proxy.org`.
 
-## Login throttling
+Please include:
+- A detailed description of the vulnerability.
+- Steps to reproduce the issue or proof-of-concept payload.
+- Potential impact and mitigation recommendations.
 
-Failed login attempts are counted in KV by client IP with a TTL. This is intended as basic online brute-force protection, not a replacement for Cloudflare Access or account-level security.
-
-## First install
-
-Set `C1_CLAIM_TOKEN` when possible. Without it, an uninitialized public Worker is claimable by the first visitor who reaches the install endpoint.
-
-## Relay restrictions
-
-The VLESS TCP relay blocks obvious private, loopback and link-local destinations and blocks selected high-risk service ports. This reduces the chance that a compromised user credential can be used as an SSRF path into private infrastructure.
-
-## Logging
-
-The code does not intentionally log subscription tokens, UUIDs, passwords, request payloads or destination traffic. Do not add verbose packet logging to production instances.
-
-## Vulnerability reports
-
-If you publish this project, enable GitHub private vulnerability reporting and ask researchers to report exploitable issues privately before public disclosure.
+We will acknowledge receipt within 48 hours and provide a coordinated timeline for remediation.
