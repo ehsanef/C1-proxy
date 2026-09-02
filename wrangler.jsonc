@@ -10,13 +10,13 @@
     {
       "binding": "DB",
       "database_name": "c1-proxy-db",
-      "database_id": "c1-proxy-d1-binding"
+      "database_id": "58acadb8-2fe8-46f4-b0d5-31b1609b815b"
     }
   ],
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "c1-proxy-kv-binding"
+      "id": "dfc8b2475c874a6ab88a7a5b522efedf"
     }
   ],
   "vars": {
