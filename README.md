@@ -32,29 +32,31 @@
 
 ---
 
-## 🚀 One-Click Quick Start
+## 🚀 Installation Methods
 
-Deploying C1 Proxy requires only a **GitHub** account and a **Cloudflare** account.
+C1 Proxy supports two simple setup paths:
 
-### 1. Click Deploy
-Click the **Deploy to Cloudflare Workers** button above. Cloudflare will automatically provision:
-- The Worker runtime
-- Cloudflare D1 Database (`c1-proxy-db`)
-- Cloudflare KV Namespace (`KV`)
+---
 
-### 2. First-Time Setup
-1. Once deployment succeeds, open `https://your-worker.workers.dev/admin`.
-2. The **First-Time Installation** wizard will automatically launch.
-3. Choose your administrative username and secure password (minimum 8 characters).
-4. Click **Complete Setup & Launch**.
+### Option A: Cloudflare-Only (No GitHub Account Required)
+Anyone with just a free Cloudflare account can deploy in under 2 minutes:
+1. Log in to [dash.cloudflare.com](https://dash.cloudflare.com).
+2. Go to **Workers & Pages** &rarr; **Create Application** &rarr; **Create Worker** (name it `my-c1`) &rarr; click **Deploy**.
+3. Click **Edit code** in the Worker view.
+4. Copy the entire pre-built code from **[`bundle/c1-worker.js`](bundle/c1-worker.js)** and paste it into the Cloudflare online editor, then click **Deploy**.
+5. **Attach D1 Database**:
+   - Go to **Storage & Databases** &rarr; **D1** &rarr; click **Create database** (e.g. `c1-db`).
+   - Return to your Worker &rarr; **Settings** &rarr; **Bindings** &rarr; **Add** &rarr; **D1 Database**.
+   - Set **Variable name** to: `DB` and select your database.
+   - *(Optional)*: Add a KV binding with variable name `KV`.
+6. **Done!** Open `https://my-c1.your-subdomain.workers.dev/admin` to set up your administrator password.
 
-### 3. Create Your First User
-1. In the **Users** tab, click **Add User**.
-2. Specify user name, bandwidth quota, and protocol options.
-3. Open **Manage** to view:
-   - Universal Subscription URL (auto-detects client format)
-   - Direct connection URIs for VLESS, Trojan, and Shadowsocks
-   - Instant SVG QR codes for mobile scanning
+---
+
+### Option B: 1-Click Deploy (With GitHub Account)
+1. Click the **Deploy to Cloudflare Workers** button above.
+2. Cloudflare provisions the Worker, D1 database, and KV bindings automatically.
+3. Open `https://your-worker.workers.dev/admin` to launch the first-install wizard.
 
 ---
 
