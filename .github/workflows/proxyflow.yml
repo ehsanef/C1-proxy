@@ -1,0 +1,79 @@
+name: ProxyFlow / Windows
+
+on:
+  push:
+    branches: [proxyflow-v1]
+    paths:
+      - 'ProxyFlow/**'
+      - '.github/workflows/proxyflow.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: proxyflow-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: ProxyFlow
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Validate source and regression tests
+        run: |
+          python -m py_compile proxyflow.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node --check web/app.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -m unittest discover -s tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python tests/smoke_executable.py
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Install pinned build tool
+        run: python -m pip install pyinstaller==6.22.2
+      - name: Package Windows executable
+        run: python -m PyInstaller --clean --noconfirm --onefile --console --name ProxyFlow --add-data "web;web" proxyflow.py
+      - name: Smoke-test packaged application
+        run: python tests/smoke_executable.py dist/ProxyFlow.exe
+      - name: Prepare clean source and documentation
+        shell: python
+        run: |
+          from pathlib import Path
+          import shutil
+          import zipfile
+          root = Path.cwd()
+          out = root / 'release'
+          out.mkdir(exist_ok=True)
+          win = out / 'windows'
+          win.mkdir(exist_ok=True)
+          shutil.copy2(root / 'dist' / 'ProxyFlow.exe', win / 'ProxyFlow.exe')
+          for name in ('README.md', 'SECURITY.md'):
+              shutil.copy2(root / name, win / name)
+          excluded = {'__pycache__', '.build-env', 'build', 'dist', 'release'}
+          with zipfile.ZipFile(out / 'ProxyFlow-1.0.0-rc1-source.zip', 'w', zipfile.ZIP_DEFLATED) as archive:
+              for path in sorted(root.rglob('*')):
+                  relative = path.relative_to(root)
+                  if path.is_file() and not excluded.intersection(relative.parts) and path.suffix not in ('.pyc', '.spec'):
+                      archive.write(path, Path('ProxyFlow') / relative)
+      - name: Upload Windows executable
+        uses: actions/upload-artifact@v7
+        with:
+          name: ProxyFlow-Windows-x64
+          path: ProxyFlow/release/windows/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Upload clean source archive
+        uses: actions/upload-artifact@v7
+        with:
+          name: ProxyFlow-Source
+          path: ProxyFlow/release/ProxyFlow-1.0.0-rc1-source.zip
+          if-no-files-found: error
+          retention-days: 30
